@@ -1,0 +1,59 @@
+---
+title: "dc-climate-hw1"
+author: "Elmera Azadpour & Jordan Davis"
+date: "4/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(lubridate)
+library(ggplot2)
+library(tidyverse)
+library(chron)
+library(here)
+
+dc_clim = read.table(here("data","DC_clim_data.csv"),fill=TRUE,sep=',',header=T)
+head(dc_clim)
+
+date=as.Date(dc_clim$DATE)
+```
+
+Lets start with daily data of air temperature 
+```{r dailyplots, echo=TRUE}
+
+ggplot(dc_clim, aes(date, dc_clim$TMAX))+
+  geom_line() + 
+  labs(y="Daily Maximum Temperature (degrees F)", x="Date") +
+  theme_minimal()
+
+ggplot(dc_clim, aes(date, dc_clim$TMIN))+
+  geom_line()+ 
+  labs(y="Daily Minimum Temperature (degrees F)", x="Date") +
+  theme_minimal()
+
+ggplot(dc_clim, aes(date, dc_clim$PRCP))+
+  geom_line()+ 
+  labs(y="Daily Rainfall (in)", x="Date") +
+  theme_minimal()
+
+```
+
+```{r dailyplots.filled, echo=TRUE}
+
+# find the row with missing data
+fillrow = which(is.na(dc_clim$PRCP)) ## find rows where PRCP is NA 
+fillrow ## these are the locations of the rows
+dc_clim$PRCP[fillrow]=0 ## these should be assigned zero
+# replot to make sure it works
+ggplot(dc_clim, aes(date, dc_clim$PRCP))+geom_line()+ labs(y="Daily rainfall (mm)", x="Date")
+
+
+# find rows with missing data
+# temperature
+fillrow = which(is.na(dc_clim$TMAX) | dc_clim$TMAX < 40)
+fillrow = fillrow[2:length(fillrow)]
+dc_clim$TMAX[fillrow]=(dc_clim$TMAX[fillrow+1]+dc_clim$TMAX[fillrow-1])/2
+ggplot(dc_clim, aes(date, dc_clim$TMAX))+geom_line()+ labs(y="Daily Maximum Temperature (degrees F)", x="Date")
+
+```
